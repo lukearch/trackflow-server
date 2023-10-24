@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './common/guards/auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { IgnorePropertiesInterceptor } from './common/interceptors/ignore-properties.interceptor';
 import { GlobalModule } from './global/global.module';
 import { ResourcesModule } from './resources/resources.module';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { IgnorePropertiesInterceptor } from './common/interceptors/ignore-properties.interceptor';
 
 @Module({
   imports: [
@@ -37,7 +36,6 @@ import { IgnorePropertiesInterceptor } from './common/interceptors/ignore-proper
       provide: APP_INTERCEPTOR,
       useClass: IgnorePropertiesInterceptor
     }
-  ],
-  controllers: [AppController]
+  ]
 })
 export class AppModule {}
