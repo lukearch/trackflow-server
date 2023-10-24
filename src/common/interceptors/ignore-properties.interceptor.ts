@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, map } from 'rxjs';
-import { JSON_IGNORED_PROPS } from 'src/common/decorators/ignore.decorator';
+import { JSON_IGNORED_PROPS } from '../decorators/ignore.decorator';
 
 @Injectable()
 export class IgnorePropertiesInterceptor implements NestInterceptor {
