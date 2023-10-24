@@ -12,4 +12,8 @@ export class PlanService {
       data
     });
   }
+
+  async plans(): Promise<Plan[]> {
+    return this.prisma.plan.findMany();
+  }
 }
