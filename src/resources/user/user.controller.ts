@@ -1,6 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { Role, User } from '@prisma/client';
+import { Ignore } from 'src/common/decorators/ignore.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { IRequest } from 'src/common/interfaces/custom-request.interface';
+import { DecodedUserToken } from 'src/common/interfaces/decoded-user.interface';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -13,11 +16,20 @@ export class UserController {
     return this.userService.users();
   }
 
-  @Get(':id')
+  @Get('find/:id')
   @Roles(Role.ADMIN)
+  @Ignore('password')
   public getUserById(@Param('id') id: string): Promise<User> {
     return this.userService.user({
       id
+    });
+  }
+
+  @Get('me')
+  @Ignore('password', 'role', 'plan.id', 'id', 'planId')
+  public getProfile(@Req() request: IRequest): Promise<User> {
+    return this.userService.user({
+      id: request.getContext<DecodedUserToken>('user').sub
     });
   }
 }
