@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -30,7 +31,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromRequest(request);
 
     if (!token)
-      throw new UnauthorizedException('must be logged to access this route');
+      throw new BadRequestException('provided token must be a Bearer Token');
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
@@ -46,6 +47,14 @@ export class AuthGuard implements CanActivate {
   }
 
   private extractTokenFromRequest(request: IRequest): string | undefined {
+    const authorization = request.headers.authorization;
+
+    if (!authorization) {
+      throw new UnauthorizedException(
+        'access token must be provided to access this resource'
+      );
+    }
+
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
