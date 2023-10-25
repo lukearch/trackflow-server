@@ -1,11 +1,10 @@
 #!/usr/bin/env sh
-
-export FORCE_COLOR=true
 . "$(dirname -- "$0")/_/husky.sh"
 
+export FORCE_COLOR=true
 
-yarn lint
-yarn format
+yarn lint --color
+yarn format --log-level silent
 git add .
 
 yarn test --coverage
