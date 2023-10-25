@@ -19,7 +19,6 @@ const config: Config = {
     '^.+\\.(t|j)s$': 'ts-jest'
   },
   testEnvironment: 'node',
-  verbose: true,
   moduleNameMapper,
   collectCoverageFrom: ['**/*.(t|j)s'],
   coveragePathIgnorePatterns: [
