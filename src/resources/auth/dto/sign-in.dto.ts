@@ -10,4 +10,8 @@ export class SignInDto {
     message: 'password is missing'
   })
   password: string;
+
+  constructor(customer: SignInDto) {
+    Object.assign(this, customer);
+  }
 }

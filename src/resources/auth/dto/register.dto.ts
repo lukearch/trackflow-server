@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsPhoneNumber,
   IsStrongPassword
 } from 'class-validator';
@@ -25,10 +26,11 @@ export class RegisterDto implements Prisma.UserCreateInput {
   })
   lastName: string;
 
+  @IsOptional()
   @IsPhoneNumber('BR', {
     message: 'phone must be valid'
   })
-  phone: string;
+  phone?: string;
 
   @IsStrongPassword({
     minLength: 6,
@@ -38,4 +40,8 @@ export class RegisterDto implements Prisma.UserCreateInput {
     minNumbers: 1
   })
   password: string;
+
+  constructor(customer: RegisterDto) {
+    Object.assign(this, customer);
+  }
 }

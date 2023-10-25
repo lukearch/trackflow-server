@@ -10,7 +10,7 @@ describe('IgnorePropertiesInterceptor', () => {
   let context: ExecutionContext;
   let handler: CallHandler;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
         IgnorePropertiesInterceptor,

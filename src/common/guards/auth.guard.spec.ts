@@ -10,7 +10,7 @@ describe('AuthGuard', () => {
   let jwtService: JwtService;
   let configService: ConfigService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthGuard,

@@ -6,7 +6,7 @@ describe('PrismaService', () => {
   let app: NestExpressApplication;
   let service: PrismaService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [PrismaService]
     }).compile();
@@ -15,7 +15,7 @@ describe('PrismaService', () => {
     service = app.get(PrismaService);
   });
 
-  afterAll(async () => app.close());
+  afterEach(async () => app.close());
 
   it('should be defined', () => {
     expect(service).toBeDefined();
