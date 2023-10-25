@@ -11,15 +11,9 @@ describe('AuthService', () => {
   let authService: AuthService;
   let userService: UserService;
   let jwtService: JwtService;
+  let mockUser: User;
 
-  let mockUser: {
-    id: string;
-    email: string;
-    password: string;
-    role: Role;
-  };
-
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AuthService, UserService, JwtService, PrismaService]
     }).compile();
@@ -33,17 +27,21 @@ describe('AuthService', () => {
       email: 'test@example.com',
       password: await bcrypt.hash('password', 10),
       role: Role.USER
-    };
-  });
-
-  it('should be defined', () => {
-    expect(authService).toBeDefined();
+    } as User;
   });
 
   describe('signIn', () => {
+    let userServiceMock: jest.SpyInstance;
+    let jwtServiceMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      userServiceMock = jest.spyOn(userService, 'user');
+      jwtServiceMock = jest.spyOn(jwtService, 'signAsync');
+    });
+
     it('should return a token for valid credentials', async () => {
-      jest.spyOn(userService, 'user').mockResolvedValueOnce(mockUser as User);
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValueOnce('mockToken');
+      userServiceMock.mockResolvedValueOnce(mockUser);
+      jwtServiceMock.mockResolvedValueOnce('mockToken');
 
       const result = await authService.signIn('test@example.com', 'password');
 
@@ -51,8 +49,8 @@ describe('AuthService', () => {
     });
 
     it('should throw an UnauthorizedException for invalid credentials', async () => {
-      jest.spyOn(userService, 'user').mockResolvedValueOnce(mockUser as User);
-      jest.spyOn<any, string>(bcrypt, 'compare').mockResolvedValueOnce(false);
+      userServiceMock.mockResolvedValueOnce(mockUser);
+      jest.spyOn<any, any>(bcrypt, 'compare').mockResolvedValueOnce(false);
 
       await expect(
         authService.signIn('test@example.com', 'password')
@@ -61,11 +59,17 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
+    let userServiceMock: jest.SpyInstance;
+    let jwtServiceMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      userServiceMock = jest.spyOn(userService, 'createUser');
+      jwtServiceMock = jest.spyOn(jwtService, 'signAsync');
+    });
+
     it('should return a token for a new user', async () => {
-      jest
-        .spyOn(userService, 'createUser')
-        .mockResolvedValueOnce(mockUser as User);
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValueOnce('mockToken');
+      userServiceMock.mockResolvedValueOnce(mockUser);
+      jwtServiceMock.mockResolvedValueOnce('mockToken');
 
       const result = await authService.register({
         email: 'text@example.com',

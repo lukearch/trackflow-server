@@ -10,15 +10,28 @@ import { RegisterDto } from './dto/register.dto';
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: AuthService;
+  let authServiceMock: jest.Mocked<AuthService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [AuthService, UserService, JwtService, PrismaService]
+      providers: [
+        {
+          provide: AuthService,
+          useValue: {
+            register: jest.fn(),
+            signIn: jest.fn()
+          }
+        },
+        UserService,
+        JwtService,
+        PrismaService
+      ]
     }).compile();
 
     authController = module.get<AuthController>(AuthController);
-    authService = module.get(AuthService);
+    authService = module.get<AuthService>(AuthService);
+    authServiceMock = authService as jest.Mocked<AuthService>;
   });
 
   it('should be defined', () => {
@@ -32,15 +45,14 @@ describe('AuthController', () => {
         password: 'password'
       });
 
-      const signInSpy = jest
-        .spyOn(authService, 'signIn')
-        .mockResolvedValueOnce({
-          token: 'mockToken'
-        });
+      authServiceMock.signIn.mockResolvedValueOnce({ token: 'mockToken' });
 
       await authController.authenticateUser(signInDto);
 
-      expect(signInSpy).toHaveBeenCalledWith('test@example.com', 'password');
+      expect(authServiceMock.signIn).toHaveBeenCalledWith(
+        'test@example.com',
+        'password'
+      );
     });
 
     it('should return the result from authService.signIn', async () => {
@@ -49,9 +61,7 @@ describe('AuthController', () => {
         password: 'password'
       });
 
-      jest.spyOn(authService, 'signIn').mockResolvedValueOnce({
-        token: 'mockToken'
-      });
+      authServiceMock.signIn.mockResolvedValueOnce({ token: 'mockToken' });
 
       const result = await authController.authenticateUser(signInDto);
 
@@ -68,13 +78,11 @@ describe('AuthController', () => {
         password: 'password'
       });
 
-      const registerSpy = jest
-        .spyOn(authService, 'register')
-        .mockResolvedValueOnce({ token: 'mockToken' });
+      authServiceMock.register.mockResolvedValueOnce({ token: 'mockToken' });
 
       await authController.registerUser(registerDto);
 
-      expect(registerSpy).toHaveBeenCalledWith(registerDto);
+      expect(authServiceMock.register).toHaveBeenCalledWith(registerDto);
     });
 
     it('should create a new user', async () => {
@@ -85,9 +93,7 @@ describe('AuthController', () => {
         password: 'password'
       });
 
-      jest.spyOn(authService, 'register').mockResolvedValueOnce({
-        token: 'mockToken'
-      });
+      authServiceMock.register.mockResolvedValueOnce({ token: 'mockToken' });
 
       const result = await authController.registerUser(registerDto);
 
