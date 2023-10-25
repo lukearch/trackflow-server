@@ -1,8 +1,11 @@
+import { ROLES_KEY } from '@/common/decorators/roles.decorator';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { ROLES_KEY } from '@/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { Observable } from 'rxjs';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { IRequest } from '../interfaces/custom-request.interface';
+import { DecodedUserToken } from '../interfaces/decoded-user.interface';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -11,13 +14,37 @@ export class RolesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+    if (this.isPublic(context)) {
+      return true;
+    }
+
+    const requiredRoles = this.extractRequiredRoles(context);
+
+    if (!requiredRoles?.length) return true;
+
+    const request = context.switchToHttp().getRequest<IRequest>();
+    const role = request.getContext<DecodedUserToken>('user').role;
+
+    if (role === Role.ADMIN || requiredRoles.includes(role)) return true;
+
+    return false;
+  }
+
+  isPublic(context: ExecutionContext) {
+    const isPublic = this.reflector.getAllAndOverride<Role[]>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass()
     ]);
 
-    if (!requiredRoles) return true;
+    if (isPublic) return true;
 
     return false;
+  }
+
+  extractRequiredRoles(context: ExecutionContext) {
+    return this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass()
+    ]);
   }
 }

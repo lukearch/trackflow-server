@@ -40,6 +40,19 @@ describe('IgnorePropertiesInterceptor', () => {
     expect(interceptor).toBeDefined();
   });
 
+  it('should extract properties to be ignored from reflector', async () => {
+    const extractIgnoredPropsSpy = jest.spyOn(
+      interceptor,
+      'extractIgnoredProps'
+    );
+
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValueOnce([]);
+
+    await firstValueFrom(interceptor.intercept(context, handler));
+
+    expect(extractIgnoredPropsSpy).toHaveBeenCalledWith(context);
+  });
+
   it('should remove ignored properties from the object', async () => {
     const ignoredProperties = ['prop1'];
 

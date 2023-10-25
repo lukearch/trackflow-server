@@ -9,6 +9,7 @@ describe('AuthGuard', () => {
   let guard: AuthGuard;
   let jwtService: JwtService;
   let configService: ConfigService;
+  let reflector: Reflector;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,13 +26,29 @@ describe('AuthGuard', () => {
       ]
     }).compile();
 
-    guard = module.get<AuthGuard>(AuthGuard);
-    jwtService = module.get<JwtService>(JwtService);
-    configService = module.get<ConfigService>(ConfigService);
+    guard = module.get(AuthGuard);
+    jwtService = module.get(JwtService);
+    configService = module.get(ConfigService);
+    reflector = module.get(Reflector);
   });
 
   it('should be defined', () => {
     expect(guard).toBeDefined();
+    expect(jwtService).toBeDefined();
+    expect(configService).toBeDefined();
+  });
+
+  it('should always allow access when resource is public', () => {
+    const mockContext = {
+      getHandler: jest.fn(),
+      getClass: jest.fn()
+    };
+
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValueOnce(true);
+
+    const result = guard.canActivate(mockContext as any);
+
+    expect(result).toBeTruthy();
   });
 
   it('should allow access with valid token', async () => {

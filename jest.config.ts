@@ -1,10 +1,14 @@
 import { Config } from 'jest';
+import { join } from 'path';
 import { compilerOptions } from './tsconfig.json';
 
 const moduleNameMapper = {};
 
 Object.entries(compilerOptions.paths).forEach((path) => {
-  moduleNameMapper[path[0].replace('*', '(.*)')] = `<rootDir>/$1`;
+  moduleNameMapper[path[0].replace('*', '(.*)')] = `${join(
+    process.cwd(),
+    path[1][0].replace('*', '$1')
+  )}`;
 });
 
 const config: Config = {
@@ -14,11 +18,26 @@ const config: Config = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest'
   },
-  collectCoverageFrom: ['**/*.(t|j)s'],
-  coverageDirectory: '../coverage',
   testEnvironment: 'node',
   verbose: true,
-  moduleNameMapper
+  moduleNameMapper,
+  collectCoverageFrom: ['**/*.(t|j)s'],
+  coveragePathIgnorePatterns: [
+    'node_modules',
+    'interfaces',
+    '.module.ts',
+    '<rootDir>/main.ts',
+    '.decorator.ts'
+  ],
+  coverageDirectory: '../coverage',
+  coverageThreshold: {
+    global: {
+      branches: 20,
+      functions: 30,
+      lines: 50,
+      statements: 50
+    }
+  }
 };
 
 export default config;
