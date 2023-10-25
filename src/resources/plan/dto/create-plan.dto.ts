@@ -27,4 +27,8 @@ export class CreatePlanDto implements Prisma.PlanCreateInput {
 
   @IsOptional()
   maxEvents?: number;
+
+  constructor(customer: CreatePlanDto) {
+    Object.assign(this, customer);
+  }
 }

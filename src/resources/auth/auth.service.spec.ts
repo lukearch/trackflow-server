@@ -1,7 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Role } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../global/prisma/prisma.service';
 import { UserService } from '../user/user.service';
@@ -42,7 +42,7 @@ describe('AuthService', () => {
 
   describe('signIn', () => {
     it('should return a token for valid credentials', async () => {
-      jest.spyOn<any, any>(userService, 'user').mockResolvedValueOnce(mockUser);
+      jest.spyOn(userService, 'user').mockResolvedValueOnce(mockUser as User);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValueOnce('mockToken');
 
       const result = await authService.signIn('test@example.com', 'password');
@@ -51,8 +51,8 @@ describe('AuthService', () => {
     });
 
     it('should throw an UnauthorizedException for invalid credentials', async () => {
-      jest.spyOn<any, any>(userService, 'user').mockResolvedValueOnce(mockUser);
-      jest.spyOn<any, any>(bcrypt, 'compare').mockResolvedValueOnce(false);
+      jest.spyOn(userService, 'user').mockResolvedValueOnce(mockUser as User);
+      jest.spyOn<any, string>(bcrypt, 'compare').mockResolvedValueOnce(false);
 
       await expect(
         authService.signIn('test@example.com', 'password')
@@ -63,8 +63,8 @@ describe('AuthService', () => {
   describe('register', () => {
     it('should return a token for a new user', async () => {
       jest
-        .spyOn<any, any>(userService, 'createUser')
-        .mockResolvedValueOnce(mockUser);
+        .spyOn(userService, 'createUser')
+        .mockResolvedValueOnce(mockUser as User);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValueOnce('mockToken');
 
       const result = await authService.register({
