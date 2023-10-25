@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Plan } from '@prisma/client';
-import { PrismaService } from '../../global/prisma/prisma.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { PlanController } from './plan.controller';
 import { PlanService } from './plan.service';

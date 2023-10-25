@@ -3,8 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Role, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../global/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+import { PrismaService } from '@/common/prisma/prisma.service';
+import { UserService } from '@/resources/user/user.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {

@@ -1,9 +1,9 @@
 import { Controller, Get, Param, Req } from '@nestjs/common';
 import { Role, User } from '@prisma/client';
-import { Ignore } from '../../common/decorators/ignore.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { IRequest } from '../../common/interfaces/custom-request.interface';
-import { DecodedUserToken } from '../../common/interfaces/decoded-user.interface';
+import { Ignore } from '@/common/decorators/ignore.decorator';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { IRequest } from '@/common/interfaces/custom-request.interface';
+import { DecodedUserToken } from '@/common/interfaces/decoded-user.interface';
 import { UserService } from './user.service';
 
 @Controller('user')

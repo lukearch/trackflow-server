@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { IRequest } from '../interfaces/custom-request.interface';
+import { IRequest } from '@/common/interfaces/custom-request.interface';
 
 export const requestContext = (
   req: IRequest,

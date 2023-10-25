@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Plan } from '@prisma/client';
-import { PrismaService } from '../../global/prisma/prisma.service';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 
 @Injectable()

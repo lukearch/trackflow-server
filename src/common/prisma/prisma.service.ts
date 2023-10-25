@@ -2,11 +2,14 @@ import {
   Injectable,
   Logger,
   OnModuleDestroy,
-  OnModuleInit
+  OnModuleInit,
+  Scope
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
-@Injectable()
+@Injectable({
+  scope: Scope.DEFAULT
+})
 export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
