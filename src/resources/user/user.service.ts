@@ -1,10 +1,10 @@
+import { PrismaService } from '@/common/prisma/prisma.service';
 import {
   ConflictException,
   Injectable,
   NotFoundException
 } from '@nestjs/common';
-import { Plan, Prisma, User } from '@prisma/client';
-import { PrismaService } from '@/common/prisma/prisma.service';
+import { Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -36,28 +36,17 @@ export class UserService {
 
     if (user) throw new ConflictException();
 
-    const freePlan: Plan = await this.prisma.plan
-      .findUnique({
-        where: {
-          name: 'gratuito'
-        }
-      })
-      .then(async (plan) => {
-        return plan
-          ? plan
-          : await this.prisma.plan.create({
-              data: {
-                name: 'gratuito'
-              }
-            });
-      });
-
     return this.prisma.user.create({
       data: {
         ...data,
         plan: {
-          connect: {
-            id: freePlan.id
+          connectOrCreate: {
+            create: {
+              name: 'Gratuito'
+            },
+            where: {
+              name: 'Gratuito'
+            }
           }
         }
       }

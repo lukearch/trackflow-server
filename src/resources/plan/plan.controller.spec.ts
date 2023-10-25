@@ -18,7 +18,6 @@ describe('PlanController', () => {
       features: [],
       maxEvents: 2500,
       description: null,
-      duration: null,
       price: null
     },
     {
@@ -29,7 +28,6 @@ describe('PlanController', () => {
       features: [],
       maxEvents: 2500,
       description: null,
-      duration: null,
       price: null
     }
   ];

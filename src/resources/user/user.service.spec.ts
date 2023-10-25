@@ -1,14 +1,12 @@
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Plan, Prisma, Role, User } from '@prisma/client';
-import { PrismaService } from '@/common/prisma/prisma.service';
+import { Prisma, Role, User } from '@prisma/client';
 import { UserService } from './user.service';
 
 describe('UserService', () => {
   let userService: UserService;
   let prismaService: PrismaService;
-
-  let mockPlans: Plan[] = [];
 
   const mockUsers: User[] = [
     {
@@ -32,41 +30,9 @@ describe('UserService', () => {
           provide: PrismaService,
           useValue: {
             user: {
-              findUnique: jest.fn((props: Prisma.UserDeleteArgs) => {
-                return (
-                  mockUsers.find((user) => {
-                    if (
-                      user.id === props.where.id ||
-                      user.email === props.where.email
-                    )
-                      return user;
-                  }) || null
-                );
-              }),
-              findMany: jest.fn(() => mockUsers),
+              findUnique: jest.fn(),
+              findMany: jest.fn(),
               create: jest.fn()
-            },
-            plan: {
-              create: jest.fn((props: Prisma.PlanCreateArgs) => {
-                const basePlan = {
-                  id: '1',
-                  name: null,
-                  active: false,
-                  description: null,
-                  additionalFeatures: [],
-                  features: [],
-                  duration: null,
-                  maxEvents: 2500,
-                  price: null
-                };
-
-                Object.assign(basePlan, props.data);
-
-                mockPlans.push(basePlan);
-
-                return basePlan as Plan;
-              }),
-              findUnique: jest.fn()
             }
           }
         }
@@ -75,7 +41,6 @@ describe('UserService', () => {
 
     userService = module.get<UserService>(UserService);
     prismaService = module.get(PrismaService);
-    mockPlans = [];
   });
 
   it('should be defined', () => {
@@ -88,7 +53,9 @@ describe('UserService', () => {
         id: '1'
       };
 
-      const findUniqueSpy = jest.spyOn(prismaService.user, 'findUnique');
+      const findUniqueSpy = jest
+        .spyOn(prismaService.user, 'findUnique')
+        .mockResolvedValue({} as User);
 
       await userService.user(uniqueKeys);
 
@@ -103,6 +70,8 @@ describe('UserService', () => {
         id: 'invalid_id'
       };
 
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(undefined);
+
       expect(userService.user(uniqueKeys)).rejects.toThrow(NotFoundException);
     });
 
@@ -110,6 +79,10 @@ describe('UserService', () => {
       const uniqueKeys: Prisma.UserWhereUniqueInput = {
         id: '1'
       };
+
+      jest
+        .spyOn(prismaService.user, 'findUnique')
+        .mockResolvedValueOnce(mockUsers.find((u) => u.id === uniqueKeys.id));
 
       const result = await userService.user(uniqueKeys);
 
@@ -120,6 +93,10 @@ describe('UserService', () => {
 
   describe('users', () => {
     it('should return an array of users', async () => {
+      jest
+        .spyOn(prismaService.user, 'findMany')
+        .mockResolvedValueOnce(mockUsers);
+
       const result = await userService.users();
 
       expect(result).toEqual(mockUsers);
@@ -135,66 +112,20 @@ describe('UserService', () => {
         password: 'r2d2'
       };
 
+      jest
+        .spyOn(prismaService.user, 'findUnique')
+        .mockResolvedValueOnce({} as User);
+
       expect(userService.createUser(user)).rejects.toThrow(ConflictException);
     });
 
-    it('should create an user with current existing free plan', async () => {
+    it('should create a new user and connect to free default free plan', async () => {
       const user: Prisma.UserCreateInput = {
         email: 'test@example.com',
         firstName: 'Luke',
         lastName: 'Skywalker',
         password: 'r2d2'
       };
-
-      const findUniqueSpy = jest
-        .spyOn(prismaService.plan, 'findUnique')
-        .mockResolvedValueOnce({
-          name: 'gratuito',
-          id: '1'
-        } as Plan);
-
-      await userService.createUser(user);
-
-      expect(findUniqueSpy).toHaveBeenCalledWith({
-        where: {
-          name: 'gratuito'
-        }
-      });
-    });
-
-    it('should create a new free plan called "gratuito" when it does not exist', async () => {
-      const user: Prisma.UserCreateInput = {
-        email: 'test@example.com',
-        firstName: 'Luke',
-        lastName: 'Skywalker',
-        password: 'r2d2'
-      };
-
-      jest.spyOn(prismaService.plan, 'findUnique').mockResolvedValueOnce(null);
-
-      const createSpy = jest.spyOn(prismaService.plan, 'create');
-
-      await userService.createUser(user);
-
-      expect(createSpy).toHaveBeenCalledWith({
-        data: {
-          name: 'gratuito'
-        }
-      });
-
-      expect(mockPlans).toHaveLength(1);
-      expect(mockPlans.shift()).toHaveProperty('id', '1');
-    });
-
-    it('should create a new user', async () => {
-      const user: Prisma.UserCreateInput = {
-        email: 'test@example.com',
-        firstName: 'Luke',
-        lastName: 'Skywalker',
-        password: 'r2d2'
-      };
-
-      jest.spyOn(prismaService.plan, 'findUnique').mockResolvedValueOnce(null);
 
       const createSpy = jest
         .spyOn(prismaService.user, 'create')
@@ -206,8 +137,13 @@ describe('UserService', () => {
         data: {
           ...user,
           plan: {
-            connect: {
-              id: '1'
+            connectOrCreate: {
+              create: {
+                name: 'Gratuito'
+              },
+              where: {
+                name: 'Gratuito'
+              }
             }
           }
         }

@@ -43,14 +43,23 @@ model Domain {
 }
 
 model Plan {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   User               User[]
-  name               String   @unique
-  price              Float?   @default(0.0)
-  duration           Int?
+  name               String    @unique
+  price              Float?    @default(0.0)
+  packages           Package[]
   description        String?
   features           String[]
   additionalFeatures String[]
-  active             Boolean  @default(false)
-  maxEvents          Int      @default(2500)
+  active             Boolean   @default(false)
+  maxEvents          Int       @default(2500)
+}
+
+model Package {
+  id               String  @id @default(cuid())
+  planId           String?
+  Plan             Plan?   @relation(fields: [planId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  durationInMonths Int?    @default(1)
+  discount         Float?  @default(0)
+  totalPrice       Float?
 }

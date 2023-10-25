@@ -1,12 +1,12 @@
+import { PrismaService } from '@/common/prisma/prisma.service';
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Plan } from '@prisma/client';
-import { PrismaService } from '@/common/prisma/prisma.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { PlanService } from './plan.service';
-import { ConflictException } from '@nestjs/common';
 
 describe('PlanService', () => {
-  let authService: PlanService;
+  let planService: PlanService;
   let prismaService: PrismaService;
 
   const mockPlan: Plan = {
@@ -17,7 +17,6 @@ describe('PlanService', () => {
     features: [],
     maxEvents: 2500,
     description: null,
-    duration: null,
     price: null
   };
 
@@ -31,19 +30,20 @@ describe('PlanService', () => {
             plan: {
               findUnique: jest.fn(),
               create: jest.fn(),
-              findMany: jest.fn()
+              findMany: jest.fn(),
+              update: jest.fn()
             }
           }
         }
       ]
     }).compile();
 
-    authService = module.get<PlanService>(PlanService);
+    planService = module.get<PlanService>(PlanService);
     prismaService = module.get(PrismaService);
   });
 
   it('should be defined', () => {
-    expect(authService).toBeDefined();
+    expect(planService).toBeDefined();
   });
 
   describe('create', () => {
@@ -56,7 +56,7 @@ describe('PlanService', () => {
         .spyOn(prismaService.plan, 'create')
         .mockResolvedValueOnce(mockPlan);
 
-      await authService.create(createPlanDto);
+      await planService.create(createPlanDto);
 
       expect(createSpy).toHaveBeenCalledWith({ data: createPlanDto });
     });
@@ -70,7 +70,7 @@ describe('PlanService', () => {
         .spyOn(prismaService.plan, 'findUnique')
         .mockResolvedValueOnce(mockPlan);
 
-      expect(authService.create(createPlanDto)).rejects.toThrow(
+      expect(planService.create(createPlanDto)).rejects.toThrow(
         ConflictException
       );
     });
@@ -82,7 +82,7 @@ describe('PlanService', () => {
 
       jest.spyOn(prismaService.plan, 'create').mockResolvedValueOnce(mockPlan);
 
-      const result = await authService.create(createPlanDto);
+      const result = await planService.create(createPlanDto);
 
       expect(result).toHaveProperty('name', createPlanDto.name);
     });
@@ -94,9 +94,15 @@ describe('PlanService', () => {
         .spyOn(prismaService.plan, 'findMany')
         .mockResolvedValueOnce([]);
 
-      await authService.plans();
+      await planService.plans();
 
       expect(findManySpy).toHaveBeenCalled();
     });
   });
+
+  // describe('update', async () => {
+  //   it('should update an existing plan provided by id', () => {
+  //     jest.spyOn(prismaService.plan, 'update').mockResolvedValueOnce(mockPlan);
+  //   });
+  // });
 });
