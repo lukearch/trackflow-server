@@ -3,9 +3,10 @@ import { Plan } from '@prisma/client';
 import { PrismaService } from '../../global/prisma/prisma.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { PlanService } from './plan.service';
+import { ConflictException } from '@nestjs/common';
 
 describe('PlanService', () => {
-  let service: PlanService;
+  let authService: PlanService;
   let prismaService: PrismaService;
 
   const mockPlan: Plan = {
@@ -28,6 +29,7 @@ describe('PlanService', () => {
           provide: PrismaService,
           useValue: {
             plan: {
+              findUnique: jest.fn(),
               create: jest.fn(),
               findMany: jest.fn()
             }
@@ -36,12 +38,12 @@ describe('PlanService', () => {
       ]
     }).compile();
 
-    service = module.get<PlanService>(PlanService);
+    authService = module.get<PlanService>(PlanService);
     prismaService = module.get(PrismaService);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(authService).toBeDefined();
   });
 
   describe('create', () => {
@@ -54,9 +56,23 @@ describe('PlanService', () => {
         .spyOn(prismaService.plan, 'create')
         .mockResolvedValueOnce(mockPlan);
 
-      await service.create(createPlanDto);
+      await authService.create(createPlanDto);
 
       expect(createSpy).toHaveBeenCalledWith({ data: createPlanDto });
+    });
+
+    it('should throw a ConflictException when provided plan name equals existing plan name', async () => {
+      const createPlanDto = new CreatePlanDto({
+        name: 'example'
+      });
+
+      jest
+        .spyOn(prismaService.plan, 'findUnique')
+        .mockResolvedValueOnce(mockPlan);
+
+      expect(authService.create(createPlanDto)).rejects.toThrow(
+        ConflictException
+      );
     });
 
     it('should return new plan', async () => {
@@ -64,15 +80,11 @@ describe('PlanService', () => {
         name: 'example'
       });
 
-      const createSpy = jest
-        .spyOn(prismaService.plan, 'create')
-        .mockResolvedValueOnce(mockPlan);
+      jest.spyOn(prismaService.plan, 'create').mockResolvedValueOnce(mockPlan);
 
-      const result = await service.create(createPlanDto);
+      const result = await authService.create(createPlanDto);
 
-      expect(createSpy).toHaveBeenCalledWith({ data: createPlanDto });
       expect(result).toHaveProperty('name', createPlanDto.name);
-      expect(result).toEqual(mockPlan);
     });
   });
 
@@ -82,7 +94,7 @@ describe('PlanService', () => {
         .spyOn(prismaService.plan, 'findMany')
         .mockResolvedValueOnce([]);
 
-      await service.plans();
+      await authService.plans();
 
       expect(findManySpy).toHaveBeenCalled();
     });

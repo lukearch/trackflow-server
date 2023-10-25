@@ -1,9 +1,7 @@
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from './prisma.service';
 
 describe('PrismaService', () => {
-  let app: NestExpressApplication;
   let service: PrismaService;
 
   beforeEach(async () => {
@@ -11,11 +9,10 @@ describe('PrismaService', () => {
       providers: [PrismaService]
     }).compile();
 
-    app = module.createNestApplication();
-    service = app.get(PrismaService);
+    service = module.get(PrismaService);
   });
 
-  afterEach(async () => app.close());
+  afterEach(async () => service.onModuleDestroy());
 
   it('should be defined', () => {
     expect(service).toBeDefined();

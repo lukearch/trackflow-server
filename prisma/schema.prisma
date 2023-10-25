@@ -45,7 +45,7 @@ model Domain {
 model Plan {
   id                 String   @id @default(cuid())
   User               User[]
-  name               String
+  name               String   @unique
   price              Float?   @default(0.0)
   duration           Int?
   description        String?

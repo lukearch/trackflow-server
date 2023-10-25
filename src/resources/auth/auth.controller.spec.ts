@@ -77,7 +77,7 @@ describe('AuthController', () => {
       expect(registerSpy).toHaveBeenCalledWith(registerDto);
     });
 
-    it('should return the result from authService.register', async () => {
+    it('should create a new user', async () => {
       const registerDto = new RegisterDto({
         email: 'text@example.com',
         firstName: 'John',

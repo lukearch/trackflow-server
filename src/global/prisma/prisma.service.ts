@@ -14,17 +14,13 @@ export class PrismaService
   private readonly logger = new Logger(PrismaService.name);
 
   async onModuleInit() {
-    await this.$connect()
-      .then(() => {
-        this.logger.log('Prisma Client connected with successfully');
-      })
-      .catch((err) => {
-        this.logger.error(err.message);
-      });
+    return this.$connect().then(() => {
+      this.logger.log('Prisma Client connected with successfully');
+    });
   }
 
   async onModuleDestroy() {
-    await this.$disconnect().then(() => {
+    return this.$disconnect().then(() => {
       this.logger.log('Prisma Client disconnected');
     });
   }

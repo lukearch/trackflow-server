@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { Plan, Prisma, User } from '@prisma/client';
 import { PrismaService } from '../../global/prisma/prisma.service';
 
@@ -24,20 +28,29 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: data.email
+      }
+    });
+
+    if (user) throw new ConflictException();
+
     const freePlan: Plan = await this.prisma.plan
-      .findFirstOrThrow({
+      .findUnique({
         where: {
           name: 'gratuito'
         }
       })
-      .catch(
-        async () =>
-          await this.prisma.plan.create({
-            data: {
-              name: 'gratuito'
-            }
-          })
-      );
+      .then(async (plan) => {
+        return plan
+          ? plan
+          : await this.prisma.plan.create({
+              data: {
+                name: 'gratuito'
+              }
+            });
+      });
 
     return this.prisma.user.create({
       data: {
