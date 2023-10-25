@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn lint
+yarn format
+git add .
+
+yarn jest $(git diff --cached --name-only | grep '\.spec\.ts$')
